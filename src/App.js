@@ -73,17 +73,49 @@ class MiCasa extends Component {
     Modal.setAppElement('body');
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    const quotesApi = `https://cors.io/?https://www.goodreads.com/quotes/widget/27359384-shahar-shalev?v=2`;
     const name = localStorage.getItem(NAME_LS);
     if (name) {
       this.setState({name});
     } else {
       this.setState({modalIsOpen: true});
     }
-
-    fetch('https://horizonshq.herokuapp.com/api/inspirationalquotes')
-      .then(resp => resp.json())
-      .then(resp => this.setState({quote: resp.message}));
+    // new Promise((resolve, reject) => {
+    //   jsonp(quotesApi, (err, data) => {
+    //     if (err) {
+    //       reject(err);
+    //     }
+    //     resolve(data);
+    //   });
+    // })
+      fetch(quotesApi)
+      .then(resp => resp.text())
+      .then(str => {
+        const regex = /.*&ldquo;(.*).&rdquo.*title=\\\"(.*)\squotes.*/gm;
+        let m;
+        let result = {};
+        while ((m = regex.exec(str)) !== null) {
+          // This is necessary to avoid infinite loops with zero-width matches
+          if (m.index === regex.lastIndex) {
+              regex.lastIndex++;
+          }
+          
+          // The result can be accessed through the `m`-variable.
+          m.forEach((match, groupIndex) => {
+            if (groupIndex === 1)
+            {
+              result['quote'] = match.replace(/\\/g, '');
+            }
+            if (groupIndex === 2)
+            {
+              result['author'] = match;
+            }
+          });
+      }
+      return result['quote'] + ' - ' +  result['author'];
+    })
+    .then(resp => this.setState({quote: resp}));
 
     setInterval(() => {
       var time = DateTime.local();
@@ -147,7 +179,7 @@ class MiCasa extends Component {
     return DateTime.local();
   }
 
-  getBGStyle(category = 'HK') {
+  getBGStyle(category = 'nature,water,mountains') {
     return {
       backgroundImage: `url(https://source.unsplash.com/2560x1600/daily?${category})`,
       backgroundSize: 'cover',
@@ -158,6 +190,7 @@ class MiCasa extends Component {
   render() {
     return (
       <div style={this.getBGStyle(this.state.category)}>
+        <link href="//db.onlinewebfonts.com/c/a59a10fc173a405262ecba082980066e?family=Aktiv+Grotesk" rel="stylesheet" type="text/css"/>
         <div className="bg-wrapper">
           <div className="text-right top-right weather">
             <div>
@@ -187,7 +220,7 @@ class MiCasa extends Component {
             </Modal>
           </div>
           <div className="text-center bottom-third quote">
-            <div id="quote-text">{this.state.quote}</div>
+            <div id="quote-text" dangerouslySetInnerHTML={{ __html: this.state.quote }}></div>
           </div>
           <div className="text-right bottom-right">
             <div id="settings-text">

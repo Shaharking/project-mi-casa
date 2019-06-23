@@ -1,3 +1,4 @@
+
 .bg-wrapper h1,
 h2,
 h3 {
@@ -48,6 +49,13 @@ h3 {
 .block-text h1,
 h2 {
   display: inline;
+  font-family: "Helvetica Neue";
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: always;
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  -webkit-perspective: 1000;
 }
 
 .quote {
