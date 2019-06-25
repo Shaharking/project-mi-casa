@@ -175,10 +175,8 @@ class MiCasa extends Component {
   fetchImage(category, callback) {
     var self = this;
     chrome.storage.local.get(['cache', 'cacheTime'], function(items) {
-      if (items.cache && items.cacheTime && items.cacheTime) {
-        if (items.cacheTime > Date.now() - 3600*1000) {
-          return callback(items.cache); // Serialization is auto, so nested objects are no problem
-        }
+      if (items.cache && items.cacheTime && items.cacheTime && items.cacheTime > Date.now() - 3600*1000) {
+        return callback(items.cache); // Serialization is auto, so nested objects are no problem
       }
       else 
       {

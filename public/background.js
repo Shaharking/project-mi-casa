@@ -1,10 +1,13 @@
 /*global chrome*/
+const profileStorageName = 'goodreadsProfileName';
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     console.log('got background request', request);
     if (request.contentScriptQuery == "getQuote") {
       //const quotesApi = `https://cors.io/?https://www.goodreads.com/quotes/widget/27359384-shahar-shalev?v=2`;
-      const quotesApi = `https://www.goodreads.com/quotes/widget/27359384-shahar-shalev?v=2`;
+      const profileName = localStorage.getItem(profileStorageName) || '27359384-shahar-shalev';
+      const quotesApi = `https://www.goodreads.com/quotes/widget/${profileName}?v=2`;
 
       fetch(quotesApi)
       .then(resp => resp.text())
@@ -33,8 +36,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return result['quote'] + ' - ' +  result['author'];
     })
     .then(resp => sendResponse(resp))
-    //.then(resp => this.setState({quote: resp}));
+
     return true;  // Will respond asynchronously.
     }
-
 });
