@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {DateTime} from 'luxon';
 import Modal from 'react-modal';
 import './App.css';
-
+/*global chrome*/
 const NAME_LS = 'NAME_LS';
 
 const customStyles = {
@@ -37,11 +37,18 @@ class MiCasa extends Component {
       weatherAPIKey: '594d083c4f45203a1d8cf6c1f7dd0a0b',
       weatherIcon: null,
       modalIsOpen: false,
-      inputValue: ''
+      inputValue: '',
+      background: {
+        backgroundImage: ``,
+        backgroundSize: 'cover',
+        height: '100vh'
+      }
     };
 
     this.closeModal = this.closeModal.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.getBGStyle = this.getBGStyle.bind(this);
+    this.fetchImage = this.fetchImage.bind(this);
   }
 
   closeModal() {
@@ -74,48 +81,19 @@ class MiCasa extends Component {
   }
 
   async componentDidMount() {
-    const quotesApi = `https://cors.io/?https://www.goodreads.com/quotes/widget/27359384-shahar-shalev?v=2`;
+    
     const name = localStorage.getItem(NAME_LS);
+    this.getBGStyle();
+
     if (name) {
       this.setState({name});
     } else {
       this.setState({modalIsOpen: true});
     }
-    // new Promise((resolve, reject) => {
-    //   jsonp(quotesApi, (err, data) => {
-    //     if (err) {
-    //       reject(err);
-    //     }
-    //     resolve(data);
-    //   });
-    // })
-      fetch(quotesApi)
-      .then(resp => resp.text())
-      .then(str => {
-        const regex = /.*&ldquo;(.*).&rdquo.*title=\\\"(.*)\squotes.*/gm;
-        let m;
-        let result = {};
-        while ((m = regex.exec(str)) !== null) {
-          // This is necessary to avoid infinite loops with zero-width matches
-          if (m.index === regex.lastIndex) {
-              regex.lastIndex++;
-          }
-          
-          // The result can be accessed through the `m`-variable.
-          m.forEach((match, groupIndex) => {
-            if (groupIndex === 1)
-            {
-              result['quote'] = match.replace(/\\/g, '');
-            }
-            if (groupIndex === 2)
-            {
-              result['author'] = match;
-            }
-          });
-      }
-      return result['quote'] + ' - ' +  result['author'];
-    })
-    .then(resp => this.setState({quote: resp}));
+    
+    chrome.runtime.sendMessage({ contentScriptQuery: "getQuote" }, (quote) => {
+      this.setState({quote: quote});
+    });
 
     setInterval(() => {
       var time = DateTime.local();
@@ -179,18 +157,55 @@ class MiCasa extends Component {
     return DateTime.local();
   }
 
+  toDataURL(url, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+      var reader = new FileReader();
+      reader.onloadend = function() {
+        callback(reader.result);
+      }
+      reader.readAsDataURL(xhr.response);
+    };
+    xhr.open('GET', url);
+    xhr.responseType = 'blob';
+    xhr.send();
+  }
+  
+  
+  fetchImage(category, callback) {
+    var self = this;
+    chrome.storage.local.get(['cache', 'cacheTime'], function(items) {
+      if (items.cache && items.cacheTime && items.cacheTime) {
+        if (items.cacheTime > Date.now() - 3600*1000) {
+          return callback(items.cache); // Serialization is auto, so nested objects are no problem
+        }
+      }
+      else 
+      {
+        self.toDataURL(`https://source.unsplash.com/2560x1600/daily?${category}` ,function(data) {
+          chrome.storage.local.set({cache: data, cacheTime: Date.now()}, function() {
+            return callback(data);
+          });
+        });
+      }
+    });
+  }
+
   getBGStyle(category = 'nature,water,mountains') {
-    return {
-      backgroundImage: `url(https://source.unsplash.com/2560x1600/daily?${category})`,
-      backgroundSize: 'cover',
-      height: '100vh'
-    }
+    this.fetchImage(category, (data) => {
+      this.setState({
+        background: {
+          backgroundImage: `url("${data}")`,
+          backgroundSize: 'cover',
+          height: '100vh'
+        }
+      })
+    });
   }
 
   render() {
     return (
-      <div style={this.getBGStyle(this.state.category)}>
-        <link href="//db.onlinewebfonts.com/c/a59a10fc173a405262ecba082980066e?family=Aktiv+Grotesk" rel="stylesheet" type="text/css"/>
+      <div style={this.state.background}>
         <div className="bg-wrapper">
           <div className="text-right top-right weather">
             <div>

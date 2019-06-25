@@ -14,5 +14,16 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true
+    },
+    "globals": {
+      "chrome": "readonly"
+    }
+  },
+  "devDependencies": {
+    "rewire": "^4.0.1"
   }
 }

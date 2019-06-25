@@ -16,8 +16,9 @@ Personalized homepage extension for browsers written in React.
   "short_name": "React App",
   "name": "Create React App Sample",
   "permissions": [
-    "geolocation"
+    "storage",
+    "geolocation",
+    "*://*.goodreads.com/*"
   ]
 }
-
 ```
