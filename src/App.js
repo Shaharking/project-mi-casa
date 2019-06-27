@@ -237,7 +237,7 @@ class MiCasa extends Component {
           </div>
           <div className="text-right bottom-right">
             <div id="settings-text">
-              <h6><i class="fa fa-cog"></i>Settings</h6>
+              {/* <h6><i class="fa fa-cog"></i>Settings</h6> */}
             </div>
           </div>
         </div>
