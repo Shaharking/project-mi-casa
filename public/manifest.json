@@ -5,8 +5,8 @@
     "newtab": "index.html"
   },
   "content_security_policy": "script-src 'self' 'sha256-GgRxrVOKNdB4LrRsVPDSbzvfdV4UqglmviH9GoBJ5jk='; object-src 'self'",
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "BIT - Inspiration Tab",
+  "name": "Book Inspiration Tab",
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false
